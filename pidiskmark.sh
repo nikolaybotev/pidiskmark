@@ -18,7 +18,7 @@ crystalvolume() {
   local pcent="$(echo "$dfi" | awk '{print $2}')"
   local used="$(echo "$dfi" | awk '{print $3}')"
   local size="$(echo "$dfi" | awk '{print $4}')"
-  eval $(blkid -o export "$source")
+  eval $(/usr/sbin/blkid -o export "$source")
   echo "${LABEL:-$PARTLABEL}: $pcent used ($used / $size)"
 }
 
