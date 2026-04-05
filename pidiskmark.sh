@@ -1,11 +1,11 @@
 #!/bin/sh
 
 crystalread() {
-  awk -F \; '{ printf("%32s : %8.2f MB/s [%9.1f IOPS]\n", $3, $7*1024/1e6, $8) }'
+  awk -F \; '/^fio:/ { print; next } { printf("%32s : %8.2f MB/s [%9.1f IOPS]\n", $3, $7*1024/1e6, $8) }'
 }
 
 crystalwrite() {
-  awk -F \; '{ printf("%32s : %8.2f MB/s [%9.1f IOPS]\n", $3, $48*1024/1e6, $49) }'
+  awk -F \; '/^fio:/ { print; next } { printf("%32s : %8.2f MB/s [%9.1f IOPS]\n", $3, $48*1024/1e6, $49) }'
 }
 
 crystaltest() {
@@ -55,6 +55,7 @@ SIZE="${2:-1Gi}"
 ITERATIONS="${3:-5}"
 DURATION="${4:-5}"
 INTERVAL="${5:-5}"
+ATOMIC="${6:-0}"
 
 if ! fio -v > /dev/null 2>&1; then
   echo "Please install fio." > /dev/stderr
@@ -62,7 +63,7 @@ if ! fio -v > /dev/null 2>&1; then
 fi
 
 if [ -z "$FILE" ]; then
-  echo Usage: $0 test_file_name [size=1Gi] [iterations=5] [duration=5] [interval=5] > /dev/stderr
+  echo Usage: $0 test_file_name [size=1Gi] [iterations=5] [duration=5] [interval=5] [atomic=0] > /dev/stderr
   exit 1
 fi
 
@@ -76,11 +77,11 @@ if ! touch "$FILE" 2>/dev/null; then
   exit 3
 fi
 
-OPTS="--ioengine=libaio --direct=1 --atomic=1 --buffered=0 --iodepth_batch_complete=0 --userspace_reap --output-format=terse"
+OPTS="--ioengine=libaio --direct=1 --atomic=${ATOMIC} --buffered=0 --iodepth_batch_complete=0 --userspace_reap --output-format=terse"
 CONFIG="--loops=${ITERATIONS} --ramp_time=2s --runtime=${DURATION}s --size=$SIZE"
 
 echo "---------------------------------------------------------------------"
-echo "PiDiskMark 1.1 (C) 2020-2021 Nikolay Botev"
+echo "PiDiskMark 1.1 (C) 2020-2026 Nikolay Botev"
 echo ""
 echo "---------------------------------------------------------------------"
 echo "* MB/s = 1,000,000 bytes/s [SATA/600 = 600,000,000 bytes/s]"
